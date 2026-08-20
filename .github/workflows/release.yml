@@ -1,0 +1,99 @@
+name: Build, attest, and release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  attestations: write
+  contents: write
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install pinned Android toolchain
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0" "ndk;27.0.12077973" "cmake;3.22.1"
+
+      - name: Ensure Gradle wrapper is executable
+        run: chmod +x gradlew
+
+      - name: Restore release signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_SIGNING_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_SIGNING_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_SIGNING_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_SIGNING_KEY_PASSWORD }}
+        run: |
+          test -n "$KEYSTORE_BASE64"
+          test -n "$STORE_PASSWORD"
+          test -n "$KEY_ALIAS"
+          test -n "$KEY_PASSWORD"
+          mkdir -p _private
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > _private/kakaolink-bridge-release.jks
+          {
+            echo "storeFile=_private/kakaolink-bridge-release.jks"
+            echo "storePassword=$STORE_PASSWORD"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "keyPassword=$KEY_PASSWORD"
+          } > keystore.properties
+
+      - name: Build signed release from tagged source
+        run: ./gradlew --no-daemon clean assembleRelease
+
+      - name: Verify APK and privacy invariants
+        run: |
+          mkdir -p dist _tmp_apk_check
+          cp app/build/outputs/apk/release/app-release.apk "dist/ShareUriBridge-${GITHUB_REF_NAME}.apk"
+          APK="dist/ShareUriBridge-${GITHUB_REF_NAME}.apk"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK"
+          PERMISSIONS="$($ANDROID_HOME/build-tools/35.0.0/aapt2 dump permissions "$APK")"
+          printf '%s\n' "$PERMISSIONS"
+          if printf '%s\n' "$PERMISSIONS" | grep -q 'uses-permission'; then
+            echo "Unexpected Android permission in release APK" >&2
+            exit 1
+          fi
+          unzip -q "$APK" -d _tmp_apk_check
+          if grep -R -a -E 'android/util/Log|__android_log' _tmp_apk_check app/src; then
+            echo "Forbidden logging API found" >&2
+            exit 1
+          fi
+          sha256sum "$APK" > "${APK}.sha256"
+
+      - name: Generate GitHub build provenance
+        uses: actions/attest@v4
+        with:
+          subject-path: dist/ShareUriBridge-${{ github.ref_name }}.apk
+
+      - name: Publish bot-authored GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cat > release-notes.txt <<'EOF'
+          Initial release.
+
+          - Captures KakaoTalk share deep links.
+          - Generates a portable HTTPS link and copies it to the clipboard.
+          - Performs all processing locally without network permission.
+          - Includes GitHub Artifact Attestation for build provenance verification.
+          EOF
+          gh release create "$GITHUB_REF_NAME" \
+            "dist/ShareUriBridge-${GITHUB_REF_NAME}.apk" \
+            "dist/ShareUriBridge-${GITHUB_REF_NAME}.apk.sha256" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Share URI Bridge ${GITHUB_REF_NAME}" \
+            --notes-file release-notes.txt \
+            --verify-tag

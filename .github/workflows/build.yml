@@ -1,0 +1,28 @@
+name: Verify build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: android-actions/setup-android@v3
+      - name: Install native toolchain
+        run: sdkmanager "platforms;android-35" "ndk;27.0.12077973" "cmake;3.22.1"
+      - name: Ensure Gradle wrapper is executable
+        run: chmod +x gradlew
+      - name: Build unsigned release APK from source
+        run: ./gradlew --no-daemon assembleRelease
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kakaolink-bridge-unsigned
+          path: app/build/outputs/apk/release/app-release-unsigned.apk
