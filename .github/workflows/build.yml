@@ -20,7 +20,10 @@ jobs:
           distribution: temurin
           java-version: "17"
       - name: Install exact Android toolchain
-        run: sdkmanager "platforms;android-36" "build-tools;36.1.0" "ndk;27.0.12077973" "cmake;3.22.1"
+        run: |
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          test -x "$SDKMANAGER"
+          "$SDKMANAGER" "platforms;android-36" "build-tools;36.1.0" "ndk;27.0.12077973" "cmake;3.22.1"
       - name: Build unsigned release with strict verification
         run: |
           chmod +x gradlew
