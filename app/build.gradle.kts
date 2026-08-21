@@ -12,15 +12,15 @@ val signingProperties = Properties().apply {
 
 android {
     namespace = "dev.local.kakaolinkcapture"
-    compileSdk = 35
+    compileSdk = 36
     ndkVersion = "27.0.12077973"
 
     defaultConfig {
         applicationId = "dev.local.kakaolinkcapture"
         minSdk = 24
-        targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0"
+        targetSdk = 36
+        versionCode = 2
+        versionName = "2.0.0"
 
         ndk {
             abiFilters += listOf("arm64-v8a", "x86_64")
@@ -31,6 +31,11 @@ android {
                 cppFlags += listOf("-std=c++17", "-Wall", "-Wextra", "-Werror")
             }
         }
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     signingConfigs {
