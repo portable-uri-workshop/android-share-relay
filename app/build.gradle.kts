@@ -19,8 +19,8 @@ android {
         applicationId = "dev.local.kakaolinkcapture"
         minSdk = 24
         targetSdk = 36
-        versionCode = 3
-        versionName = "2.0.1"
+        versionCode = 4
+        versionName = "2.0.2"
 
         ndk {
             abiFilters += listOf("arm64-v8a", "x86_64")
