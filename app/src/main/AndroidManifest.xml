@@ -21,7 +21,8 @@
             android:exported="true"
             android:intentMatchingFlags="enforceIntentFilter"
             android:noHistory="true"
-            android:taskAffinity="">
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.NoDisplay">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="capture" />
