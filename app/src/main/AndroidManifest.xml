@@ -6,7 +6,9 @@
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
         <activity
             android:name="dev.local.kakaolinkcapture.SettingsActivity"
-            android:exported="true">
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:taskAffinity="dev.local.kakaolinkcapture.settings">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -17,7 +19,9 @@
             android:name="android.app.NativeActivity"
             android:excludeFromRecents="true"
             android:exported="true"
-            android:intentMatchingFlags="enforceIntentFilter">
+            android:intentMatchingFlags="enforceIntentFilter"
+            android:noHistory="true"
+            android:taskAffinity="">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="capture" />

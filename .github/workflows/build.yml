@@ -43,6 +43,8 @@ jobs:
           printf '%s\n' "$MANIFEST" | grep -q 'android.intent.action.VIEW'
           printf '%s\n' "$MANIFEST" | grep -q 'kakaolink'
           printf '%s\n' "$MANIFEST" | grep -q 'send'
+          printf '%s\n' "$MANIFEST" | grep -q 'android:noHistory'
+          printf '%s\n' "$MANIFEST" | grep -q 'android:taskAffinity'
           if grep -R -n -E 'android/util/Log|__android_log' app/src; then
             echo 'Forbidden logging API found' >&2
             exit 1

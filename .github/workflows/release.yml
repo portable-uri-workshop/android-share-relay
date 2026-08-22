@@ -42,6 +42,9 @@ jobs:
             echo 'Forbidden logging API found' >&2
             exit 1
           fi
+          MANIFEST="$($ANDROID_HOME/build-tools/36.1.0/aapt2 dump xmltree "$APK" --file AndroidManifest.xml)"
+          printf '%s\n' "$MANIFEST" | grep -q 'android:noHistory'
+          printf '%s\n' "$MANIFEST" | grep -q 'android:taskAffinity'
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: unsigned-apk
