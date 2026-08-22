@@ -65,6 +65,16 @@ public final class SettingsActivity extends Activity {
         setContentView(scrollView);
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // Settings are launcher-only. Do not leave this Activity underneath a
+        // later share-capture task, where finishing the capture could reveal it.
+        if (!isChangingConfigurations()) {
+            finish();
+        }
+    }
+
     private TextView text(String value, int sizeSp, boolean bold) {
         TextView view = new TextView(this);
         view.setText(value);

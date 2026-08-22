@@ -10,6 +10,8 @@
 4. 앱 선택기에서 **KakaoLink Capture**를 선택합니다.
 5. 앱은 설정 화면을 띄우지 않고 즉시 복사한 뒤 종료합니다.
 
+설정 Activity와 공유 capture Activity는 서로 다른 task로 격리됩니다. 설정 화면은 사용자가 launcher에서 직접 연 경우에만 표시되며, 다른 앱으로 전환하면 종료됩니다. 공유 capture는 history와 최근 앱에 남지 않습니다.
+
 설정 기본값은 두 항목 모두 꺼짐입니다.
 
 - **Deep-link 사이트 링크로 복사 — OFF:** 원본 `kakaolink://...` data URI를 그대로 복사합니다.
@@ -65,9 +67,9 @@ v2 release pipeline은 다음 runner 경계를 사용합니다.
 Expected signing certificate SHA-256은 [release/expected-certificate-sha256.txt](release/expected-certificate-sha256.txt)에 고정돼 있습니다.
 
 ```bash
-gh attestation verify ShareUriBridge-v2.0.0.apk \
+gh attestation verify ShareUriBridge-v2.0.1.apk \
   -R portable-uri-workshop/android-share-relay
-apksigner verify --verbose --print-certs ShareUriBridge-v2.0.0.apk
+apksigner verify --verbose --print-certs ShareUriBridge-v2.0.1.apk
 ```
 
 ## 라이선스
